@@ -1,22 +1,14 @@
-"""Real-data runs with isolated refits, auditable budgets and failure records."""
+"""Prepare and run the DeiT-S/16 experiment (timing, LL refits, failure status)."""
 import csv
-import hashlib
 import json
-import os
 import platform
-import sys
 import time
 from pathlib import Path
 import torch
 import torch.nn.functional as F
 from bimuon import core as c
-from .task import Data,Features,Streams,configure,extract,frozen_digest,make_model,save,sha
-
-BASE=dict(lam=.01,D=5,Q=1024,alpha=.1,eta=.2,batch=64,T=1000,eval_every=250)
-
-
-def load(path):
-    return json.loads(Path(path).read_text())
+from experiments.io import save,sha
+from .task import Data,Features,Streams,configure,extract,frozen_digest,make_model
 
 
 def synchronize():
@@ -118,13 +110,13 @@ def run(root,out,method,seed,lr,cfg,workers=2,refits=True,warmup=20):
         # restore *all* trainable/head/momentum/stream states before timing.
         if warmup:
             ws=Streams(data,900000+seed,cfg['batch'])
-            wu=c.Update(params,method,lr); wy=y0.clone()
+            wu=c.BiMuon(params,method,lr); wy=y0.clone()
             for _ in range(warmup):
                 hg,wy=c.estimate(features,params,wy,ws,cfg); wu.step(hg)
             ws.close(); del ws,wu,wy,hg
             with torch.no_grad():
                 for p,p0 in zip(params,x0): p.copy_(p0)
-        y=y0.clone(); update=c.Update(params,method,lr)
+        y=y0.clone(); update=c.BiMuon(params,method,lr)
         streams=Streams(data,seed,cfg['batch'])
         curves=[dict(step=0,optimized_val_ce=initial['initial_ce'],
                      lower_residual=initial['refit']['residual'],refit_converged=True)]

@@ -1,4 +1,4 @@
-"""Run the retained synthetic representation-learning protocol."""
+"""Run the synthetic representation-learning experiment."""
 import argparse
 import json
 from pathlib import Path
@@ -22,6 +22,6 @@ def main():
         cfg['T']=a.steps
     result=e.run(cfg,a.seed,a.method,setting['learning_rates'][a.method],a.output)
     print(json.dumps(result,indent=2))
-    if not result['stable']:raise SystemExit('Run diverged; results retained')
+    if not result['stable']:raise SystemExit('Run diverged; outputs kept')
 
 if __name__=='__main__':main()

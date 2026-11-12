@@ -45,7 +45,7 @@ def test_blockwise_derivatives_keep_coupling():
     gy=torch.autograd.grad(loss,Y,create_graph=True)[0]
     hv,mixed=torch.autograd.grad((gy*v).sum(),(Y,X))
     original=e.deriv
-    with task_adapter('blockwise',c,mu):
+    with task_adapter(c,mu):
         torch.testing.assert_close(e.deriv(x,labels,X,Y,mu)[1],gy)
         torch.testing.assert_close(e.hvp(x,X,Y,v,mu),hv)
         torch.testing.assert_close(e.mixed(x,labels,X,Y,v),mixed)

@@ -41,15 +41,6 @@ def norm(tensors):
     return torch.sqrt(sum(t.square().sum() for t in tensors))
 
 
-def comparison(a, b):
-    na, nb = norm(a), norm(b)
-    delta = norm([x-z for x,z in zip(a,b)])
-    dot = sum((x*z).sum() for x,z in zip(a,b))
-    return dict(absolute_error=float(delta), reference_norm=float(nb),
-                relative_error=float(delta / nb.clamp_min(1e-20)),
-                cosine=float(dot / (na*nb).clamp_min(1e-20)))
-
-
 @torch.no_grad()
 def direction(m, method, q=12, polar_rtol=1e-6):
     """Supported polar or Frobenius-normalized cubic Newton--Schulz direction."""
@@ -128,9 +119,6 @@ class BiMuon:
             dst.copy_(src.to(dst))
 
 
-Update = BiMuon
-
-
 def estimate(features, params, y, streams, cfg):
     """Fresh batch for every oracle; no LL unroll or differentiation through v."""
     y = y.detach()
@@ -187,23 +175,3 @@ def refit(h, labels, lam=.01, initial=None, tol=1e-4, max_iter=400):
     residual = float(head_grad(h,labels,y,lam).norm())
     return y, dict(residual=residual, gap_bound=residual**2/(2*lam),
                    converged=math.isfinite(residual) and residual<=tol)
-
-
-@torch.no_grad()
-def conjugate_gradient(h, y, rhs, lam, tol=1e-9, max_iter=300):
-    """SPD head solve. Does not form the (classes*features)^2 Hessian."""
-    x = torch.zeros_like(rhs)
-    r, p = rhs.clone(), rhs.clone()
-    rr = r.square().sum()
-    target = max(float(rr.sqrt())*tol,tol)
-    for iteration in range(max_iter):
-        hp = head_hvp(h,y,p,lam)
-        alpha = rr / (p*hp).sum().clamp_min(1e-30)
-        x.add_(p,alpha=float(alpha))
-        r.sub_(hp,alpha=float(alpha))
-        rr_new = r.square().sum()
-        if float(rr_new.sqrt()) <= target:
-            break
-        p = r + (rr_new / rr) * p
-        rr = rr_new
-    return x, float((head_hvp(h,y,x,lam)-rhs).norm())

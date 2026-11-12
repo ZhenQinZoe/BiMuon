@@ -1,7 +1,8 @@
-"""Current paper estimator, analytic derivatives checked against autograd.
-Shared tanh representation kernel; only the two BiMuon variants are retained.
+"""Synthetic tanh representation-learning task and the reference BiMuon estimator.
+
+Analytic derivatives are checked against autograd in tests/.
 """
-import math,time,json,hashlib
+import math,time,json
 from pathlib import Path
 import numpy as np
 import torch
@@ -10,7 +11,6 @@ from .data import DatasetBundle
 torch.set_num_threads(1)
 DT=torch.float64
 METHODS=['exact','ns']
-BASE=dict(p=16,d=32,c=4,rank=4,n_train=256,n_val=128,n_test=128,noise_std=.02,lam=.01,alpha=.1,eta=.2,D=5,Q=4,q=12,momentum=.9,T=60,batch=64,kappa=1.,eval_every=5)
 
 def dataset(cfg,seed):
     torch.manual_seed(seed)

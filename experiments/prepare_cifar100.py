@@ -1,19 +1,12 @@
-"""CIFAR pilot cache framework extended to full CIFAR-100 + frozen ResNet50."""
-import argparse, hashlib, json, os, platform, subprocess, sys, time
+"""Extract and cache frozen ResNet-50 features for CIFAR-100."""
+import argparse, json, time
 from pathlib import Path
 import numpy as np
 import torch
 import torchvision
 from torchvision.models import resnet50, ResNet50_Weights
+from experiments.io import save, sha
 
-def save(p, x):
-    p=Path(p); p.parent.mkdir(parents=True,exist_ok=True)
-    tmp=p.with_suffix(p.suffix+'.tmp');tmp.write_text(json.dumps(x,indent=2,allow_nan=False));tmp.replace(p)
-def sha(p):
-    h=hashlib.sha256()
-    with open(p,'rb') as f:
-        for b in iter(lambda:f.read(1024*1024),b''): h.update(b)
-    return h.hexdigest()
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--cache',required=True);ap.add_argument('--config',default='configs/cifar100_blockwise.json');ap.add_argument('--data-dir',default='work/cifar100_data');a=ap.parse_args();out=Path(a.cache);out.mkdir(parents=True,exist_ok=True)
     cfg=json.loads(Path(a.config).read_text())
@@ -43,7 +36,7 @@ def main():
     np.savez(out/'split_indices.npz',train=np.array(tr),validation=np.array(va))
     feat=np.load(out/'train_features.npy',mmap_mode='r');rms=float(np.sqrt(np.mean(np.asarray(feat[tr],dtype=np.float64)**2)))
     weights_file=Path(torch.hub.get_dir())/'checkpoints'/Path(w.url).name
-    save(out/'metadata.json',dict(dataset='CIFAR100',backbone='resnet50',weights='IMAGENET1K_V2',weights_sha256=sha(weights_file),preprocess=str(tf),feature_dim=2048,cache_dtype='float32',feature_scale=rms,scaling='one scalar RMS fitted only on LL-train; no whitening/centering',split_seed=cfg['data']['split_seed'],train_count=40000,validation_count=10000,test_count=10000,test_policy='cached once, excluded from all discovery metrics and beta selection',config=cfg['data']))
+    save(out/'metadata.json',dict(dataset='CIFAR100',backbone='resnet50',weights='IMAGENET1K_V2',weights_sha256=sha(weights_file),preprocess=str(tf),feature_dim=2048,cache_dtype='float32',feature_scale=rms,scaling='one scalar RMS fitted only on LL-train; no whitening/centering',split_seed=cfg['data']['split_seed'],train_count=40000,validation_count=10000,test_count=10000,test_policy='cached once, excluded from validation metrics and stepsize selection',config=cfg['data']))
     fs=['train_features.npy','test_features.npy','train_labels.npy','test_labels.npy','split_indices.npz','metadata.json']
     save(out/'complete.json',dict(config=cfg['data'],files={f:sha(out/f) for f in fs}));print('CACHE COMPLETE',flush=True)
 if __name__=='__main__':main()

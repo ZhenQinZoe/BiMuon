@@ -5,27 +5,12 @@ import os
 from pathlib import Path
 import torch
 from torch.utils.data import DataLoader, Subset
+from experiments.io import sha
 
 URL = 'https://dl.fbaipublicfiles.com/deit/deit_small_patch16_224-cd65a155.pth'
 LAYERS = {'attn.qkv.weight':(1152,384),'attn.proj.weight':(384,384),
           'mlp.fc1.weight':(1536,384),'mlp.fc2.weight':(384,1536)}
 ALLOWLIST = {f'blocks.{b}.{n}':s for b in range(8,12) for n,s in LAYERS.items()}
-
-
-def sha(path):
-    h = hashlib.sha256()
-    with open(path,'rb') as f:
-        for block in iter(lambda:f.read(1024*1024),b''):
-            h.update(block)
-    return h.hexdigest()
-
-
-def save(path, obj):
-    path = Path(path)
-    path.parent.mkdir(parents=True,exist_ok=True)
-    temp = path.with_suffix(path.suffix+'.tmp')
-    temp.write_text(json.dumps(obj,indent=2,allow_nan=False)+'\n')
-    os.replace(temp,path)
 
 
 def configure():

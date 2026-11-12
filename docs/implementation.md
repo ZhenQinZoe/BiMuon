@@ -1,19 +1,18 @@
 # Implementation notes
 
-The retained kernels use the same LL-gradient, Hessian-vector, mixed-derivative,
-and truncated-Neumann recurrences as the experiment code. Packaging removes
-comparison algorithms, historical orchestration, and machine-specific metadata.
+`bimuon/core.py` and the experiment runners use the same LL-gradient,
+Hessian-vector, mixed-derivative, and truncated-Neumann recurrences.
 
 ## Spectral transformations
 
 The exact variant computes a supported polar factor. Transformer runs exclude
-singular values at or below 1e-6 times the largest singular value; the original
+singular values at or below 1e-6 times the largest singular value; the synthetic
 tanh representation engine uses a relative threshold of 1e-14.
 
 Finite NS uses the cubic iteration `O <- 1.5 O - 0.5 O O^T O`. CIFAR-10 and
 Transformer runs initialize with `M / ||M||_F`, use 12 iterations, and evaluate
-the smaller Gram matrix. Zero momentum maps to zero. Synthetic runs preserve
-their historical capped initializer `M / max(1, ||M||_F)` and right-Gram
+the smaller Gram matrix. Zero momentum maps to zero. Synthetic runs use
+the capped initializer `M / max(1, ||M||_F)` and right-Gram
 multiplication order. These choices are intentional and not interchangeable;
 finite NS is not asserted to equal the exact polar factor.
 
@@ -22,14 +21,11 @@ moment, weight decay, scheduler, Nesterov correction, or automatic sensitivity
 allocation. `relative_stepsizes` is separate: sensitivities must be positive,
 progress scores nonnegative, and all-zero scores give a zero update.
 
-## Checks and scope
+## Tests
 
 Tests compare analytical derivatives with autograd, verify rectangular and
 rank-deficient spectral cases, check the blockwise budget, and verify optimizer
-checkpoint continuation. Such checks do not certify a convergence rate.
-Full tuning archives and comparison implementations are outside this code-only
-repository. Reusing evaluation seeds is reproduction, not independent
-confirmation. No full-scale GPU training was rerun during packaging.
+checkpoint continuation.
 
 ## References and third-party components
 

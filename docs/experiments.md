@@ -1,9 +1,7 @@
 # Experiment instructions
 
-Run from the repository root. Saved configurations retain the BiMuon evaluation
-seeds and selected stepsizes. This code-only release reruns retained method
-trajectories; it does not repeat the historical discovery search or regenerate
-comparison plots that require omitted baselines.
+Run from the repository root. Each configuration file stores the evaluation
+seeds and the stepsizes used in the paper. Baseline methods are not included.
 
 ## Synthetic representation learning
 
@@ -36,8 +34,7 @@ test set is not loaded. Repeat both methods for seeds 20–24.
 The UL tanh representation is 256-by-512. The LL classifier is L2-regularized.
 Optimization uses 60 UL iterations in float64 and an independent full LL refit
 at every iteration. `optimized_val_ce` is optimized UL validation cross-entropy,
-not an untouched test metric. Historical spectral/proxy diagnostics were removed;
-do not use this lean runner to recreate timing measurements that included them.
+not a test metric.
 
 ## CIFAR-100 controlled blockwise allocation
 
@@ -51,11 +48,10 @@ python -m experiments.blockwise --cache work/cifar100_features --rho 10 \
 Preparation uses frozen ImageNet-pretrained ResNet-50 features, a fixed
 40,000/10,000 training/validation split, and one LL-training RMS scale. It caches
 official test features separately; the validation runner does not load them.
-The retained method uses the proposed allocation across four classifier blocks,
+The runner uses the proposed allocation across four classifier blocks,
 sensitivity ratios 3 and 10, and the frozen global stepsize 0.1. Repeat over
 seeds 41001–41005. CLI `rho` is the sensitivity ratio written as varrho in the
-manuscript, not its Hessian-Lipschitz constant. This is controlled mechanism
-evidence; an improved UL objective does not imply improved LL tracking.
+manuscript, not its Hessian-Lipschitz constant.
 
 ## Transformer representation learning
 
@@ -77,13 +73,12 @@ are refreshed after every UL update.
 
 The saved protocol uses D=5, Q=1024 Hessian-vector products (1025 Neumann terms),
 mini-batches of 64, and 1,000 UL iterations in FP32. Repeat both methods over
-seeds 10–14. Independent float64 LL refits run every 250 iterations. This runner
-reports validation results; it does not regenerate official-test or historical
-time-to-target results.
+seeds 10–14. Independent float64 LL refits run every 250 iterations. The runner
+reports validation metrics only.
 
 ## Outputs
 
 Use a new output directory for every run. Numeric configurations, trajectories,
-solver residuals, and states are saved there. Failed or unconverged runs should
-be retained and inspected, not silently replaced by another seed. Generated
-artifacts are ignored by Git; sharing them requires a separate review.
+solver residuals, and states are saved there. A run that diverges or whose LL
+refit does not converge still writes its outputs and records the status in
+`result.json`. Everything under `work/` is ignored by Git.

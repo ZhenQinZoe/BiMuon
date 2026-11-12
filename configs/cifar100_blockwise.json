@@ -21,20 +21,6 @@
     "momentum": 0.9,
     "batch": 64
   },
-  "ns": {
-    "kind": "normalized",
-    "polynomial": "cubic",
-    "q": 12,
-    "source": "existing CIFAR10 NS confirmation v2"
-  },
-  "confirmation_seeds": [
-    41001,
-    41002,
-    41003,
-    41004,
-    41005
-  ],
-  "confirmation_T": 60,
   "eval_every": 5,
   "refit_max_iter": 300,
   "refit_tolerance": 1e-05,
@@ -46,5 +32,13 @@
     3,
     10
   ],
-  "global_stepsize": 0.1
+  "global_stepsize": 0.1,
+  "seeds": [
+    41001,
+    41002,
+    41003,
+    41004,
+    41005
+  ],
+  "T": 60
 }

@@ -19,12 +19,11 @@ def main():
     a=p.parse_args()
     if a.device=='cuda' and not torch.cuda.is_available():p.error('CUDA is unavailable')
     cfg=json.loads(Path(a.config).read_text())
-    data=load_data(a.cache,a.device,test=False)
-    steps=a.steps if a.steps is not None else cfg['confirmation_T']
+    data=load_data(a.cache,a.device)
+    steps=a.steps if a.steps is not None else cfg['T']
     if steps<=0:p.error('--steps must be positive')
-    result=run(data,cfg,'blockwise','proposed',a.seed,cfg['global_stepsize'],a.rho,
-               steps,a.output,'validation')
+    result=run(data,cfg,a.seed,cfg['global_stepsize'],a.rho,steps,a.output)
     print(json.dumps(result,indent=2))
-    if result['status']!='complete':raise SystemExit('Run or LL refit unresolved; evidence retained')
+    if result['status']!='complete':raise SystemExit('Run failed or LL refit did not converge; outputs kept')
 
 if __name__=='__main__':main()
