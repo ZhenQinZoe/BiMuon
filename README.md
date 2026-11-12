@@ -12,7 +12,7 @@ spectral imbalance in the upper-level (UL) geometry. BiMuon combines implicit
 hypergradient estimation with Muon-style orthogonalized updates at the UL.
 
 - **Theory.** BiMuon is the first stochastic BLO method with Muon-style
-  orthogonalized matrix updates and an $O(\epsilon^{-4})$ iteration-complexity
+  orthogonalized matrix updates and an $`O(\epsilon^{-4})`$ iteration-complexity
   guarantee. This matches the best-known rates of Muon-type methods based on
   matrix parameterizations.
 - **Blockwise variant.** For models with many matrix parameters, a blockwise
@@ -28,37 +28,37 @@ hypergradient estimation with Muon-style orthogonalized updates at the UL.
 The bilevel problem is
 
 $$
-\min_{X}\; \Phi(X) = f\big(X, Y^\*(X)\big), \qquad
+\min_{X} \Phi(X) = f\big(X, Y^\*(X)\big), \qquad
 Y^\*(X) = \arg\min_{Y} g(X, Y),
 $$
 
-where the UL variable $X$ is a matrix and $g(X,\cdot)$ is $\mu$-strongly convex.
-Each outer iteration $k$ of BiMuon (Algorithm 1 in the paper) does the following:
+where the UL variable $`X`$ is a matrix and $`g(X,\cdot)`$ is $`\mu`$-strongly convex.
+Each outer iteration $`k`$ of BiMuon (Algorithm 1 in the paper) does the following:
 
 1. **Warm-started LL tracking.** Starting from the previous LL output
-   ($Y_k^0 = Y_{k-1}^D$), take $D$ SGD steps
-   $Y_k^{t+1} = Y_k^t - \alpha \nabla_Y G(X_k, Y_k^t; \mathcal S_{k,t})$.
+   ($`Y_k^0 = Y_{k-1}^D`$), take $`D`$ SGD steps
+   $`Y_k^{t+1} = Y_k^t - \alpha \nabla_Y G(X_k, Y_k^t; \mathcal S_{k,t})`$.
 2. **Stochastic hypergradient.** Estimate
-   $\widehat{\nabla\Phi}(X_k) = \nabla_X F - \nabla^2_{XY} G\, v_Q$ at $(X_k, Y_k^D)$
+   $`\widehat{\nabla\Phi}(X_k) = \nabla_X F - \nabla^2_{XY} G  v_Q`$ at $`(X_k, Y_k^D)`$
    with a truncated Neumann series
-   $v_Q = \eta \sum_{i=0}^{Q} \prod_{j=i+1}^{Q} (I - \eta \nabla^2_{YY} G)\, \nabla_Y F$,
-   which needs $Q$ Hessian–vector products. Every oracle uses an independent
+   $`v_Q = \eta \sum_{i=0}^{Q} \prod_{j=i+1}^{Q} (I - \eta \nabla^2_{YY} G)  \nabla_Y F`$,
+   which needs $`Q`$ Hessian–vector products. Every oracle uses an independent
    fresh mini-batch.
-3. **EMA momentum.** $M_k = \theta M_{k-1} + (1-\theta)\, \widehat{\nabla\Phi}(X_k)$.
-4. **Orthogonalized UL step.** $X_{k+1} = X_k - \beta O_k$, where
-   - Option I, **Exact-Polar** (`method="exact"`): $O_k = \mathrm{polar}(M_k) = UV^\top$;
-   - Option II, **Finite-NS** (`method="ns"`): $O_k$ is $q$ cubic Newton–Schulz
-     iterations $O \leftarrow 1.5\,O - 0.5\,OO^\top O$.
+3. **EMA momentum.** $`M_k = \theta M_{k-1} + (1-\theta)  \widehat{\nabla\Phi}(X_k)`$.
+4. **Orthogonalized UL step.** $`X_{k+1} = X_k - \beta O_k`$, where
+   - Option I, **Exact-Polar** (`method="exact"`): $`O_k = \mathrm{polar}(M_k) = UV^\top`$;
+   - Option II, **Finite-NS** (`method="ns"`): $`O_k`$ is $`q`$ cubic Newton–Schulz
+     iterations $`O \leftarrow 1.5 O - 0.5 OO^\top O`$.
 
-Both variants satisfy $\mathbb E\|\nabla\Phi(X_R)\|_* = O(T^{-1/4})$.
+Both variants satisfy $`\mathbb E\Vert \nabla\Phi(X_R)\Vert _* = O(T^{-1/4})`$.
 
-**Blockwise BiMuon.** With $X = (X^{(1)}, \dots, X^{(J)})$, each block is
+**Blockwise BiMuon.** With $`X = (X^{(1)}, \dots, X^{(J)})`$, each block is
 orthogonalized separately and updated as
-$X^{(b)}_{k+1} = X^{(b)}_k - \beta\, \omega_{b,k} O^{(b)}_k$.
-The block LL sensitivity is $w_b = L_{XY,b}^2 r_b / \mu^2$ and the predicted UL
-progress is $a_{b,k} = \langle M^{(b)}_k, O^{(b)}_k \rangle$. Maximizing
-$\sum_b a_{b,k}\omega_{b,k}$ subject to the LL-drift budget
-$\sum_b w_b \omega_{b,k}^2 \le 1$ gives
+$`X^{(b)}_{k+1} = X^{(b)}_k - \beta  \omega_{b,k} O^{(b)}_k`$.
+The block LL sensitivity is $`w_b = L_{XY,b}^2 r_b / \mu^2`$ and the predicted UL
+progress is $`a_{b,k} = \langle M^{(b)}_k, O^{(b)}_k \rangle`$. Maximizing
+$`\sum_b a_{b,k}\omega_{b,k}`$ subject to the LL-drift budget
+$`\sum_b w_b \omega_{b,k}^2 \le 1`$ gives
 
 $$
 \omega_{b,k} = \frac{a_{b,k} / w_b}{\sqrt{\sum_c a_{c,k}^2 / w_c}},
@@ -94,10 +94,10 @@ for step in range(T):
     optimizer.step(hypergrads)                                    # steps 3-4
 ```
 
-`lr` is the UL stepsize $\beta$ and `momentum` is $\theta$. `BiMuon` takes
+`lr` is the UL stepsize $`\beta`$ and `momentum` is $`\theta`$. `BiMuon` takes
 hypergradients, not ordinary gradients. `estimate` implements steps 1–2 for an
 L2-regularized linear classifier on top of a differentiable feature map.
-`bimuon.relative_stepsizes(a, w)` returns the blockwise weights $\omega$.
+`bimuon.relative_stepsizes(a, w)` returns the blockwise weights $`\omega`$.
 
 ## Experiments
 
@@ -108,8 +108,8 @@ included.
 | Paper experiment | Entry point | Config |
 |---|---|---|
 | CIFAR-10 representation learning, frozen ResNet-18 features (main text) | `experiments.cifar10` | `configs/cifar10.json` |
-| CIFAR-100 blockwise stepsize allocation, frozen ResNet-50 features, $\rho\in\{1,3,10\}$ (main text) | `experiments.blockwise` | `configs/cifar100_blockwise.json` |
-| Synthetic nonlinear representation learning, $\kappa_{\mathrm{in}}\in\{1,10,100,1000\}$ (appendix) | `experiments.synthetic` | `configs/synthetic.json` |
+| CIFAR-100 blockwise stepsize allocation, frozen ResNet-50 features, $`\rho\in\{1,3,10\}`$ (main text) | `experiments.blockwise` | `configs/cifar100_blockwise.json` |
+| Synthetic nonlinear representation learning, $`\kappa_{\mathrm{in}}\in\{1,10,100,1000\}`$ (appendix) | `experiments.synthetic` | `configs/synthetic.json` |
 | Larger-scale Transformer: CIFAR-100 with DeiT-S/16, last 4 blocks as UL (appendix) | `experiments.transformer.cli` | `configs/transformer.json` |
 
 Quick CPU check (2 iterations):
