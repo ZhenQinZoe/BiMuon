@@ -1,0 +1,7 @@
+# Install the appropriate official PyTorch build for your CUDA runtime first.
+torch==2.5.1
+torchvision==0.20.1
+timm==1.0.12
+numpy==1.26.4
+Pillow==11.0.0
+pytest==8.3.4

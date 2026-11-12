@@ -1,0 +1,50 @@
+{
+  "data": {
+    "dataset": "CIFAR100",
+    "backbone": "resnet50",
+    "weights": "IMAGENET1K_V2",
+    "split_seed": 20270922,
+    "train_per_class": 400,
+    "validation_per_class": 100,
+    "feature_dim": 2048
+  },
+  "algorithm": {
+    "p": 2048,
+    "d": 256,
+    "c": 100,
+    "D": 5,
+    "Q": 4,
+    "q": 12,
+    "alpha": 0.1,
+    "eta": 0.2,
+    "lam": 0.01,
+    "momentum": 0.9,
+    "batch": 64
+  },
+  "ns": {
+    "kind": "normalized",
+    "polynomial": "cubic",
+    "q": 12,
+    "source": "existing CIFAR10 NS confirmation v2"
+  },
+  "confirmation_seeds": [
+    41001,
+    41002,
+    41003,
+    41004,
+    41005
+  ],
+  "confirmation_T": 60,
+  "eval_every": 5,
+  "refit_max_iter": 300,
+  "refit_tolerance": 1e-05,
+  "refit_chunk": 10000,
+  "spectral_abs_threshold": 1e-12,
+  "spectral_rel_threshold": 1e-06,
+  "block_mu": 0.01,
+  "rho_values": [
+    3,
+    10
+  ],
+  "global_stepsize": 0.1
+}

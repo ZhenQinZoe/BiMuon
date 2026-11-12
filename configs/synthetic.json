@@ -1,0 +1,119 @@
+{
+  "seeds": [
+    10,
+    11,
+    12,
+    13,
+    14
+  ],
+  "settings": [
+    {
+      "algorithm": {
+        "p": 16,
+        "d": 32,
+        "c": 4,
+        "rank": 8,
+        "n_train": 256,
+        "n_val": 128,
+        "n_test": 128,
+        "noise_std": 0.02,
+        "lam": 0.01,
+        "alpha": 0.1,
+        "eta": 0.2,
+        "D": 5,
+        "Q": 4,
+        "q": 12,
+        "momentum": 0.9,
+        "T": 60,
+        "batch": 64,
+        "kappa": 1,
+        "eval_every": 5
+      },
+      "learning_rates": {
+        "exact": 0.2,
+        "ns": 0.8
+      }
+    },
+    {
+      "algorithm": {
+        "p": 16,
+        "d": 32,
+        "c": 4,
+        "rank": 8,
+        "n_train": 256,
+        "n_val": 128,
+        "n_test": 128,
+        "noise_std": 0.02,
+        "lam": 0.01,
+        "alpha": 0.1,
+        "eta": 0.2,
+        "D": 5,
+        "Q": 4,
+        "q": 12,
+        "momentum": 0.9,
+        "T": 60,
+        "batch": 64,
+        "kappa": 10,
+        "eval_every": 5
+      },
+      "learning_rates": {
+        "exact": 0.4,
+        "ns": 0.8
+      }
+    },
+    {
+      "algorithm": {
+        "p": 16,
+        "d": 32,
+        "c": 4,
+        "rank": 8,
+        "n_train": 256,
+        "n_val": 128,
+        "n_test": 128,
+        "noise_std": 0.02,
+        "lam": 0.01,
+        "alpha": 0.1,
+        "eta": 0.2,
+        "D": 5,
+        "Q": 4,
+        "q": 12,
+        "momentum": 0.9,
+        "T": 60,
+        "batch": 64,
+        "kappa": 100,
+        "eval_every": 5
+      },
+      "learning_rates": {
+        "exact": 0.8,
+        "ns": 0.4
+      }
+    },
+    {
+      "algorithm": {
+        "p": 16,
+        "d": 32,
+        "c": 4,
+        "rank": 8,
+        "n_train": 256,
+        "n_val": 128,
+        "n_test": 128,
+        "noise_std": 0.02,
+        "lam": 0.01,
+        "alpha": 0.1,
+        "eta": 0.2,
+        "D": 5,
+        "Q": 4,
+        "q": 12,
+        "momentum": 0.9,
+        "T": 60,
+        "batch": 64,
+        "kappa": 1000,
+        "eval_every": 5
+      },
+      "learning_rates": {
+        "exact": 0.4,
+        "ns": 0.2
+      }
+    }
+  ]
+}
