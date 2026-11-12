@@ -32,27 +32,40 @@ $$
 Y^\*(X) = \arg\min_{Y} g(X, Y),
 $$
 
-where every UL variable $X$ is a matrix and $g(X,\cdot)$ is strongly convex.
-Each BiMuon iteration does the following:
+where the UL variable $X$ is a matrix and $g(X,\cdot)$ is $\mu$-strongly convex.
+Each outer iteration $k$ of BiMuon (Algorithm 1 in the paper) does the following:
 
-1. **LL tracking.** Run $D$ stochastic gradient steps on $g(X_t,\cdot)$, starting
-   from the previous $Y_t$.
-2. **Hypergradient.** Estimate
-   $\nabla\Phi \approx \nabla_X f - \nabla^2_{XY} g\, v$, with
-   $v = \eta \sum_{q=0}^{Q} (I - \eta \nabla^2_{YY} g)^q \nabla_Y f$
-   (a stochastic truncated Neumann series, with a fresh mini-batch for each
-   oracle call).
-3. **Momentum.** $M_t = \beta M_{t-1} + (1-\beta)\,\widehat{\nabla\Phi}_t$.
-4. **Spectral UL step.** $X_{t+1} = X_t - \gamma\, \mathrm{Orth}(M_t)$, where
-   `Orth` is either the exact polar factor $UV^\top$ (`method="exact"`) or $q$
-   steps of cubic Newton–Schulz (`method="ns"`).
+1. **Warm-started LL tracking.** Starting from the previous LL output
+   ($Y_k^0 = Y_{k-1}^D$), take $D$ SGD steps
+   $Y_k^{t+1} = Y_k^t - \alpha \nabla_Y G(X_k, Y_k^t; \mathcal S_{k,t})$.
+2. **Stochastic hypergradient.** Estimate
+   $\widehat{\nabla\Phi}(X_k) = \nabla_X F - \nabla^2_{XY} G\, v_Q$ at $(X_k, Y_k^D)$
+   with a truncated Neumann series
+   $v_Q = \eta \sum_{i=0}^{Q} \prod_{j=i+1}^{Q} (I - \eta \nabla^2_{YY} G)\, \nabla_Y F$,
+   which needs $Q$ Hessian–vector products. Every oracle uses an independent
+   fresh mini-batch.
+3. **EMA momentum.** $M_k = \theta M_{k-1} + (1-\theta)\, \widehat{\nabla\Phi}(X_k)$.
+4. **Orthogonalized UL step.** $X_{k+1} = X_k - \beta O_k$, where
+   - Option I, **Exact-Polar** (`method="exact"`): $O_k = \mathrm{polar}(M_k) = UV^\top$;
+   - Option II, **Finite-NS** (`method="ns"`): $O_k$ is $q$ cubic Newton–Schulz
+     iterations $O \leftarrow 1.5\,O - 0.5\,OO^\top O$.
 
-**Blockwise relative stepsizes.** When the UL matrix is split into blocks with
-different LL sensitivities $w_b$, BiMuon scales each block's polar direction by
-$\omega_b \propto a_b / w_b$, where $a_b = \langle M_b, \mathrm{Orth}(M_b)\rangle$
-is the progress in block $b$. The weights are normalized so that
-$\sum_b w_b \omega_b^2 = 1$, which keeps the theoretical LL drift fixed while
-moving more in the blocks that are both informative and insensitive.
+Both variants satisfy $\mathbb E\|\nabla\Phi(X_R)\|_* = O(T^{-1/4})$.
+
+**Blockwise BiMuon.** With $X = (X^{(1)}, \dots, X^{(J)})$, each block is
+orthogonalized separately and updated as
+$X^{(b)}_{k+1} = X^{(b)}_k - \beta\, \omega_{b,k} O^{(b)}_k$.
+The block LL sensitivity is $w_b = L_{XY,b}^2 r_b / \mu^2$ and the predicted UL
+progress is $a_{b,k} = \langle M^{(b)}_k, O^{(b)}_k \rangle$. Maximizing
+$\sum_b a_{b,k}\omega_{b,k}$ subject to the LL-drift budget
+$\sum_b w_b \omega_{b,k}^2 \le 1$ gives
+
+$$
+\omega_{b,k} = \frac{a_{b,k} / w_b}{\sqrt{\sum_c a_{c,k}^2 / w_c}},
+$$
+
+so blocks with more UL progress move more, and blocks that move the LL target
+more are held back. This is `bimuon.relative_stepsizes(a, w)`.
 
 ## Install
 
@@ -81,22 +94,23 @@ for step in range(T):
     optimizer.step(hypergrads)                                    # steps 3-4
 ```
 
-`BiMuon` takes hypergradients, not ordinary gradients. `estimate` implements
-steps 1–2 for an L2-regularized linear classifier on top of a differentiable
-feature map. `bimuon.relative_stepsizes(a, w)` returns the blockwise weights
-$\omega$.
+`lr` is the UL stepsize $\beta$ and `momentum` is $\theta$. `BiMuon` takes
+hypergradients, not ordinary gradients. `estimate` implements steps 1–2 for an
+L2-regularized linear classifier on top of a differentiable feature map.
+`bimuon.relative_stepsizes(a, w)` returns the blockwise weights $\omega$.
 
 ## Experiments
 
 Run every command from the repository root, and give each run a new `--output`
-directory.
+directory. Baselines (stocBiO+EMA, OpNorm, FrobNorm, stocBiO+Adam) are not
+included.
 
-| Task | Entry point | Config |
+| Paper experiment | Entry point | Config |
 |---|---|---|
-| Synthetic representation learning | `experiments.synthetic` | `configs/synthetic.json` |
-| CIFAR-10, frozen ResNet-18 features | `experiments.cifar10` | `configs/cifar10.json` |
-| CIFAR-100 blockwise allocation, frozen ResNet-50 features | `experiments.blockwise` | `configs/cifar100_blockwise.json` |
-| CIFAR-100, DeiT-S/16 (last 4 blocks trained) | `experiments.transformer.cli` | `configs/transformer.json` |
+| CIFAR-10 representation learning, frozen ResNet-18 features (main text) | `experiments.cifar10` | `configs/cifar10.json` |
+| CIFAR-100 blockwise stepsize allocation, frozen ResNet-50 features, $\rho\in\{1,3,10\}$ (main text) | `experiments.blockwise` | `configs/cifar100_blockwise.json` |
+| Synthetic nonlinear representation learning, $\kappa_{\mathrm{in}}\in\{1,10,100,1000\}$ (appendix) | `experiments.synthetic` | `configs/synthetic.json` |
+| Larger-scale Transformer: CIFAR-100 with DeiT-S/16, last 4 blocks as UL (appendix) | `experiments.transformer.cli` | `configs/transformer.json` |
 
 Quick CPU check (2 iterations):
 

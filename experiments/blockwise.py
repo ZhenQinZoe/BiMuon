@@ -10,7 +10,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--config',default='configs/cifar100_blockwise.json')
     p.add_argument('--cache',required=True)
-    p.add_argument('--rho',type=float,choices=[3,10],default=10,
+    p.add_argument('--rho',type=float,choices=[1,3,10],default=10,
                    help='Sensitivity ratio (varrho in the manuscript)')
     p.add_argument('--seed',type=int,default=41001)
     p.add_argument('--device',choices=['cpu','cuda'],default='cuda')

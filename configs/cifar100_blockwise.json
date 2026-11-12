@@ -29,6 +29,7 @@
   "spectral_rel_threshold": 1e-06,
   "block_mu": 0.01,
   "rho_values": [
+    1,
     3,
     10
   ],

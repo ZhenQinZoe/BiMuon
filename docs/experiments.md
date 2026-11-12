@@ -49,7 +49,7 @@ Preparation uses frozen ImageNet-pretrained ResNet-50 features, a fixed
 40,000/10,000 training/validation split, and one LL-training RMS scale. It caches
 official test features separately; the validation runner does not load them.
 The runner uses the proposed allocation across four classifier blocks,
-sensitivity ratios 3 and 10, and the frozen global stepsize 0.1. Repeat over
+sensitivity ratios 1, 3, and 10, and the frozen global stepsize 0.1. Repeat over
 seeds 41001–41005. CLI `rho` is the sensitivity ratio written as varrho in the
 manuscript, not its Hessian-Lipschitz constant.
 
